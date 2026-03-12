@@ -1,1 +1,200 @@
 
+<!DOCTYPE html>
+<html>
+<head>
+<title>Admin | Pengurus Web</title>
+
+<style>
+
+body{
+font-family:Segoe UI;
+background:#0f172a;
+color:white;
+padding:40px;
+}
+
+.card{
+background:#1f2937;
+padding:20px;
+border-radius:12px;
+margin-bottom:20px;
+}
+
+.report{
+background:#111827;
+padding:15px;
+border-radius:10px;
+margin-top:10px;
+}
+
+button{
+padding:8px 14px;
+border:none;
+border-radius:8px;
+cursor:pointer;
+margin-right:6px;
+margin-top:6px;
+}
+
+.done{
+background:#16a34a;
+color:white;
+}
+
+.delete{
+background:#dc2626;
+color:white;
+}
+
+.nav{
+margin-bottom:20px;
+}
+
+.nav button{
+background:#2563eb;
+color:white;
+}
+
+</style>
+</head>
+
+<body>
+
+<script>
+
+const token = prompt("Masukkan Admin Token");
+
+if(token !== "admintoken"){
+alert("Token salah");
+location.href="index.html";
+}
+
+</script>
+
+<h1>Admin Dashboard</h1>
+
+<div class="nav">
+<button onclick="location.href='data.html'">User</button>
+<button onclick="location.href='index.html'">Home</button>
+</div>
+
+<div class="card">
+
+<h2>📥 Laporan Pending</h2>
+<div id="pending"></div>
+
+</div>
+
+<div class="card">
+
+<h2>✅ Laporan Selesai</h2>
+<div id="done"></div>
+
+</div>
+
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+
+import {
+getDatabase,
+ref,
+onValue,
+update,
+remove
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+
+const firebaseConfig = {
+apiKey: "AIzaSyAG4qda-B8j2k6nOl6krNgRqc7VIDgbPqs",
+authDomain: "phishing-report-21e2c.firebaseapp.com",
+databaseURL: "https://phishing-report-21e2c-default-rtdb.asia-southeast1.firebasedatabase.app",
+projectId: "phishing-report-21e2c",
+storageBucket: "phishing-report-21e2c.firebasestorage.app",
+messagingSenderId: "276758713826",
+appId: "1:276758713826:web:945436655ff290283655bb"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+const reportsRef = ref(db,"reports");
+
+const pendingDiv = document.getElementById("pending");
+const doneDiv = document.getElementById("done");
+
+onValue(reportsRef,(snapshot)=>{
+
+pendingDiv.innerHTML="";
+doneDiv.innerHTML="";
+
+snapshot.forEach(child=>{
+
+const id = child.key;
+const data = child.val();
+
+const div = document.createElement("div");
+
+div.className="report";
+
+div.innerHTML = `
+<div>${data.kronologi}</div>
+<small>${data.time}</small>
+`;
+
+if(data.status === "pending"){
+
+const doneBtn = document.createElement("button");
+doneBtn.innerText="Selesaikan";
+doneBtn.className="done";
+
+doneBtn.onclick = function(){
+
+update(ref(db,"reports/"+id),{
+status:"done"
+});
+
+};
+
+const deleteBtn = document.createElement("button");
+deleteBtn.innerText="Hapus";
+deleteBtn.className="delete";
+
+deleteBtn.onclick = function(){
+
+remove(ref(db,"reports/"+id));
+
+};
+
+div.appendChild(doneBtn);
+div.appendChild(deleteBtn);
+
+pendingDiv.appendChild(div);
+
+}
+
+else{
+
+const deleteBtn = document.createElement("button");
+deleteBtn.innerText="Hapus";
+deleteBtn.className="delete";
+
+deleteBtn.onclick = function(){
+
+remove(ref(db,"reports/"+id));
+
+};
+
+div.appendChild(deleteBtn);
+
+doneDiv.appendChild(div);
+
+}
+
+});
+
+});
+
+</script>
+</html>
+
